@@ -10,7 +10,7 @@ import trafilatura
 # Config
 # -------------------
 BACKEND       = os.getenv("LLM_BACKEND", "echo")  # echo | groq
-GROQ_API_KEY  = os.getenv("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", "")
+GROQ_API_KEY  = os.getenv("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", "")
 GROQ_MODEL    = os.getenv("GROQ_MODEL", "llama3-8b-8192")
 
 # -------------------
@@ -191,6 +191,7 @@ if __name__=="__main__":
     import uvicorn
     uvicorn.run("app:app",host="0.0.0.0",port=int(os.getenv("PORT","8000")))
     print("Coded By Apex")
+
 
 
 
