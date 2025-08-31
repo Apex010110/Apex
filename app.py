@@ -29,7 +29,7 @@ class ChatIn(BaseModel):
 # -------------------
 # Akinator (self-learning)
 # -------------------
-DATA = json.loads(open("akinator_seed.json","r",encoding="utf-8").read())
+DATA = json.loads(open("akinator_seed.json","r",encoding="utf-8-sig").read())
 
 class Aki:
     def __init__(self):
@@ -190,5 +190,6 @@ def health():
 if __name__=="__main__":
     import uvicorn
     uvicorn.run("app:app",host="0.0.0.0",port=int(os.getenv("PORT","8000")))
+
 
 
