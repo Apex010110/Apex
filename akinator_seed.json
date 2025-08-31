@@ -1,0 +1,31 @@
+﻿{
+  "attributes": [
+    "Is the person real",
+    "Is the person alive",
+    "Is the person an actor",
+    "Is the person a politician",
+    "Is the person in technology",
+    "Is the person from Pakistan",
+    "Is the person American",
+    "Is the person an athlete",
+    "Is the person a singer",
+    "Is the person historical (pre-1950)"
+  ],
+  "entities": [
+    {
+      "name": "Elon Musk",
+      "attrs": {
+        "Is the person real": true,
+        "Is the person alive": true,
+        "Is the person an actor": false,
+        "Is the person a politician": false,
+        "Is the person in technology": true,
+        "Is the person from Pakistan": false,
+        "Is the person American": true,
+        "Is the person an athlete": false,
+        "Is the person a singer": false,
+        "Is the person historical (pre-1950)": false
+      }
+    }
+  ]
+}
