@@ -1,0 +1,1 @@
+﻿/* Paste the full animated JS from earlier */
