@@ -10,7 +10,7 @@ import trafilatura
 # Config
 # -------------------
 BACKEND       = os.getenv("LLM_BACKEND", "echo")  # echo | groq
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_API_KEY  = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL    = os.getenv("GROQ_MODEL", "mixtral-8x7b-32768")
 
 # -------------------
@@ -20,9 +20,10 @@ app = FastAPI(title="PiGenie Online AI Chat")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 with open("static/index.html", "r", encoding="utf-8") as f:
     INDEX = f.read()
-    @app.get("/whoami")
+
+@app.get("/whoami")
 def whoami():
-return {
+    return {
         "backend": BACKEND,
         "model": GROQ_MODEL,
         "has_key": bool(GROQ_API_KEY and GROQ_API_KEY.strip()),
