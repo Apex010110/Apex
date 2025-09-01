@@ -20,6 +20,13 @@ app = FastAPI(title="PiGenie Online AI Chat")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 with open("static/index.html", "r", encoding="utf-8") as f:
     INDEX = f.read()
+    @app.get("/whoami")
+def whoami():
+    return {
+        "backend": BACKEND,
+        "model": GROQ_MODEL,
+        "has_key": bool(GROQ_API_KEY and GROQ_API_KEY.strip()),
+    }
 
 class ChatIn(BaseModel):
     session_id: str | None = None
