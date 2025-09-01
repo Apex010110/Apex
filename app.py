@@ -10,7 +10,7 @@ import trafilatura
 # Config
 # -------------------
 BACKEND       = os.getenv("LLM_BACKEND", "echo")  # echo | groq
-GROQ_API_KEY  = os.getenv("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", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL    = os.getenv("GROQ_MODEL", "mixtral-8x7b-32768")
 
 # -------------------
