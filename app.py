@@ -21,6 +21,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 with open("static/index.html", "r", encoding="utf-8") as f:
     INDEX = f.read()
 
+@app.get("/")
+def root():
+    return INDEX
+
+@app.get("/health")
+def health():
+    return {"ok": True}
+
 @app.get("/whoami")
 def whoami():
     return {
