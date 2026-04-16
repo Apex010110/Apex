@@ -1,0 +1,7 @@
+name = "apex-ai"
+main = "index.js"
+compatibility_date = "2024-09-01"
+
+# GROQ_API_KEY must be added as an encrypted secret:
+#   wrangler secret put GROQ_API_KEY
+# Or via GitHub Actions secret CF_GROQ_API_KEY (see ../.github/workflows/deploy-worker.yml)
