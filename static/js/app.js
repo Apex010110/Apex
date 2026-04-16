@@ -4,6 +4,9 @@
    Secret code: NeuraX  →  unlocks Pluto theme
    ================================================================ */
 
+/* ── Backend URL — update after deploying Cloudflare Worker ──────── */
+const API_URL = 'https://apex-ai.YOURSUBDOMAIN.workers.dev/api/chat';
+
 (() => {
   'use strict';
 
@@ -518,7 +521,7 @@
     sourcesEl.innerHTML = '';
 
     try {
-      const resp = await fetch('https://apexai-dorg.onrender.com/api/chat', {
+      const resp = await fetch(API_URL, {
         method:  'POST',
         headers: { 'Content-Type':'application/json' },
         body:    JSON.stringify({ session_id:sessionId, message:text, mode }),
