@@ -24,6 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Inject Groq API key
+        env:
+          GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: sed -i "s/__GROQ_KEY__/${GROQ_KEY}/g" static/js/app.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
