@@ -4,24 +4,78 @@
    Secret code: NeuraX  →  unlocks Pluto theme
    ================================================================ */
 
-/* ── Groq — key injected at build time by GitHub Actions ─────────── */
-const GROQ_KEY = '__GROQ_KEY__';
+/* ── Groq — key from build-time injection OR browser localStorage ─── */
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
 
+function getGroqKey() {
+  const injected = '__GROQ_KEY__';
+  if (injected !== '__GROQ_KEY__') return injected;          // GitHub Actions injected it
+  return localStorage.getItem('apex_groq_key') || null;     // fallback: user entered it
+}
+
+function promptForKey() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:rgba(2,4,9,0.92);z-index:9999;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Rajdhani',sans-serif;`;
+    overlay.innerHTML = `
+      <div style="background:#0a0f1a;border:1px solid rgba(0,245,255,0.25);border-radius:12px;
+                  padding:32px;max-width:420px;width:90%;text-align:center;">
+        <div style="color:#00f5ff;font-family:'Orbitron',sans-serif;font-size:13px;
+                    letter-spacing:3px;margin-bottom:8px;">APEX AI</div>
+        <div style="color:rgba(255,255,255,0.8);font-size:15px;margin-bottom:6px;">
+          Enter your Groq API Key</div>
+        <div style="color:rgba(255,255,255,0.4);font-size:12px;margin-bottom:24px;">
+          Stored only in your browser — never sent anywhere else</div>
+        <input id="apexKeyInput" type="password"
+          placeholder="gsk_..."
+          style="width:100%;box-sizing:border-box;background:#111827;border:1px solid rgba(0,245,255,0.3);
+                 border-radius:6px;padding:10px 14px;color:#fff;font-size:14px;
+                 outline:none;margin-bottom:16px;"/>
+        <button id="apexKeySave"
+          style="background:linear-gradient(135deg,#00f5ff,#b44fff);border:none;border-radius:6px;
+                 padding:10px 32px;color:#000;font-weight:700;font-size:13px;
+                 letter-spacing:2px;cursor:pointer;width:100%;">CONNECT</button>
+        <div id="apexKeyErr" style="color:#ff4444;font-size:12px;margin-top:10px;min-height:16px;"></div>
+        <div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:16px;">
+          Get a free key at <span style="color:#00f5ff;">console.groq.com</span></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('#apexKeyInput');
+    const btn   = overlay.querySelector('#apexKeySave');
+    const err   = overlay.querySelector('#apexKeyErr');
+    input.focus();
+    function save() {
+      const val = input.value.trim();
+      if (!val.startsWith('gsk_')) { err.textContent = 'Key should start with gsk_'; return; }
+      localStorage.setItem('apex_groq_key', val);
+      document.body.removeChild(overlay);
+      resolve(val);
+    }
+    btn.addEventListener('click', save);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  });
+}
+
 async function groqChat(messages, maxTokens = 350) {
-  if (GROQ_KEY === '__GROQ_KEY__') throw new Error('API key not injected — check GitHub Actions secret GROQ_API_KEY');
+  let key = getGroqKey();
+  if (!key) key = await promptForKey();
   const r = await fetch(GROQ_API, {
     method:  'POST',
-    headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages, temperature: 0.4, max_tokens: maxTokens }),
   });
   if (!r.ok) {
+    if (r.status === 401) { localStorage.removeItem('apex_groq_key'); }
     const e = await r.json().catch(() => ({}));
     throw new Error(`Groq ${r.status}: ${e.error?.message || r.statusText}`);
   }
   const d = await r.json();
   return d.choices[0].message.content.trim();
 }
+
 
 const akinatorHistory = [];
 
