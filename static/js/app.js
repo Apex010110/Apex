@@ -518,7 +518,7 @@
     sourcesEl.innerHTML = '';
 
     try {
-      const resp = await fetch('/api/chat', {
+      const resp = await fetch('https://apexai-dorg.onrender.com/api/chat', {
         method:  'POST',
         headers: { 'Content-Type':'application/json' },
         body:    JSON.stringify({ session_id:sessionId, message:text, mode }),
