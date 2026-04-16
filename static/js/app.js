@@ -4,8 +4,22 @@
    Secret code: NeuraX  →  unlocks Pluto theme
    ================================================================ */
 
-/* ── Backend URL — update after deploying Cloudflare Worker ──────── */
-const API_URL = 'https://apex-ai.YOURSUBDOMAIN.workers.dev/api/chat';
+/* ── Groq — key injected at build time by GitHub Actions ─────────── */
+const GROQ_KEY = '__GROQ_KEY__';
+const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
+
+async function groqChat(messages, maxTokens = 350) {
+  const r = await fetch(GROQ_API, {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'llama3-8b-8192', messages, temperature: 0.4, max_tokens: maxTokens }),
+  });
+  if (!r.ok) throw new Error(`Groq HTTP ${r.status}`);
+  const d = await r.json();
+  return d.choices[0].message.content.trim();
+}
+
+const akinatorHistory = [];
 
 (() => {
   'use strict';
@@ -521,24 +535,26 @@ const API_URL = 'https://apex-ai.YOURSUBDOMAIN.workers.dev/api/chat';
     sourcesEl.innerHTML = '';
 
     try {
-      const resp = await fetch(API_URL, {
-        method:  'POST',
-        headers: { 'Content-Type':'application/json' },
-        body:    JSON.stringify({ session_id:sessionId, message:text, mode }),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      sessionId = data.session_id || sessionId;
-      sidEl.textContent = sessionId.slice(0,8).toUpperCase();
-      addMsg(data.reply || '(no reply)', 'bot');
-      if (data.sources && data.sources.length) {
-        sourcesEl.classList.remove('hidden');
-        sourcesEl.innerHTML =
-          '<strong style="color:rgba(0,245,255,0.55);font-family:var(--font-head);font-size:9px;letter-spacing:2px;">SCAN SOURCES</strong>&nbsp; ' +
-          data.sources.map(s =>
-            `<a class="source-link" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||s.url)}</a>`
-          ).join(' &nbsp;·&nbsp; ');
+      let reply;
+      if (mode === 'rag') {
+        reply = await groqChat([
+          { role: 'system', content: 'You are APEX AI Web Scanner. Answer the question accurately using your knowledge, as if you had searched the web. Be concise and factual.' },
+          { role: 'user',   content: text },
+        ], 400);
+      } else if (mode === 'akinator') {
+        akinatorHistory.push({ role: 'user', content: text });
+        reply = await groqChat([
+          { role: 'system', content: 'You are Akinator. Ask one yes/no question at a time to guess the famous person the user is thinking of. End every question with "(yes / no / unknown)". When confident, say "My guess: [Name]. Am I right? (yes/no)". If wrong, ask who it was and say you\'ve learned it.' },
+          ...akinatorHistory,
+        ]);
+        akinatorHistory.push({ role: 'assistant', content: reply });
+      } else {
+        reply = await groqChat([
+          { role: 'system', content: 'You are APEX AI, a sharp and helpful assistant. Be concise.' },
+          { role: 'user',   content: text },
+        ]);
       }
+      addMsg(reply, 'bot');
     } catch (err) {
       addMsg('Signal lost: ' + err.message, 'bot');
     } finally {
@@ -555,6 +571,7 @@ const API_URL = 'https://apex-ai.YOURSUBDOMAIN.workers.dev/api/chat';
 
   clearBtn.addEventListener('click', () => {
     chatEl.innerHTML = '';
+    akinatorHistory.length = 0;
     sourcesEl.classList.add('hidden');
     addMsg('Channel cleared. Awaiting new transmission.', 'bot');
   });
