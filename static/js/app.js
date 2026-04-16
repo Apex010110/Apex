@@ -9,12 +9,16 @@ const GROQ_KEY = '__GROQ_KEY__';
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
 
 async function groqChat(messages, maxTokens = 350) {
+  if (GROQ_KEY === '__GROQ_KEY__') throw new Error('API key not injected — check GitHub Actions secret GROQ_API_KEY');
   const r = await fetch(GROQ_API, {
     method:  'POST',
     headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'llama3-8b-8192', messages, temperature: 0.4, max_tokens: maxTokens }),
+    body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages, temperature: 0.4, max_tokens: maxTokens }),
   });
-  if (!r.ok) throw new Error(`Groq HTTP ${r.status}`);
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(`Groq ${r.status}: ${e.error?.message || r.statusText}`);
+  }
   const d = await r.json();
   return d.choices[0].message.content.trim();
 }
